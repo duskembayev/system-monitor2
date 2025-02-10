@@ -4,6 +4,7 @@ import { CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 interface Props {
   components: Component[];
+  tvMode: boolean;
 }
 
 const getHealthColor = (health: Component['health']) => {
@@ -85,30 +86,94 @@ const StatusLine: React.FC<{ components: Component[] }> = ({ components }) => {
   );
 };
 
-export const ComponentCards: React.FC<Props> = ({ components }) => {
+export const ComponentCards: React.FC<Props> = ({ components, tvMode }) => {
   const [startIndex, setStartIndex] = useState(0);
-  const cardsPerPage = 12; // Adjust based on screen size
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<number>();
+  const cardsPerPage = tvMode ? 15 : 12;
   const totalPages = Math.ceil(components.length / cardsPerPage);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setStartIndex((current) => (current + cardsPerPage >= components.length ? 0 : current + cardsPerPage));
-    }, 10000);
+  const goToPage = (pageIndex: number) => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setStartIndex(pageIndex * cardsPerPage);
+      setIsTransitioning(false);
+    }, 300);
 
-    return () => clearInterval(timer);
-  }, [components.length]);
+    // Reset the auto-transition timer
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      startAutoTransition();
+    }
+  };
+
+  const startAutoTransition = () => {
+    const interval = tvMode ? 10000 : 15000;
+    timerRef.current = window.setInterval(() => {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setStartIndex((current) => 
+          current + cardsPerPage >= components.length ? 0 : current + cardsPerPage
+        );
+        setIsTransitioning(false);
+      }, 300);
+    }, interval);
+    return timerRef.current;
+  };
+
+  // Calculate cards per page based on container size
+  useEffect(() => {
+    if (tvMode && containerRef.current) {
+      const updateCardsLayout = () => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        // Force a reflow to ensure proper sizing
+        container.style.display = 'none';
+        container.offsetHeight; // trigger reflow
+        container.style.display = 'grid';
+      };
+
+      updateCardsLayout();
+      window.addEventListener('resize', updateCardsLayout);
+      return () => window.removeEventListener('resize', updateCardsLayout);
+    }
+  }, [tvMode]);
+
+  useEffect(() => {
+    if (totalPages > 1) {
+      const timerId = startAutoTransition();
+      return () => window.clearInterval(timerId);
+    }
+  }, [components.length, tvMode, cardsPerPage, totalPages]);
 
   const visibleComponents = components.slice(startIndex, startIndex + cardsPerPage);
+  const currentPage = Math.floor(startIndex / cardsPerPage);
+
+  const gridClass = tvMode
+    ? "grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4k:grid-cols-8 gap-4 auto-rows-fr"
+    : "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 4k:grid-cols-6 gap-4";
 
   return (
-    <div className="p-6">
+    <div className={`${tvMode ? "h-[calc(100vh-6rem)]" : "p-6"}`}>
       <StatusLine components={components} />
       
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 4k:grid-cols-6 gap-4">
+      <div 
+        ref={containerRef}
+        className={`${gridClass} transition-all duration-300 ${
+          isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+        }`}
+        style={{ height: tvMode ? 'calc(100% - 4rem)' : 'auto' }}
+      >
         {visibleComponents.map((component) => (
           <div
             key={component.name}
-            className={`rounded-lg border p-3 transition-all ${getHealthColor(component.health)}`}
+            className={`rounded-lg border p-3 transition-all ${getHealthColor(component.health)} ${
+              tvMode ? 'flex flex-col' : ''
+            }`}
           >
             <div className="flex items-start justify-between mb-2">
               <div>
@@ -129,7 +194,7 @@ export const ComponentCards: React.FC<Props> = ({ components }) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 mt-auto">
               <div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">
                   Current
@@ -158,15 +223,17 @@ export const ComponentCards: React.FC<Props> = ({ components }) => {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-center mt-4 space-x-1">
+        <div className="flex justify-center mt-4 space-x-2">
           {Array.from({ length: totalPages }).map((_, i) => (
-            <div
+            <button
               key={i}
-              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                Math.floor(startIndex / cardsPerPage) === i
-                  ? 'bg-blue-500'
-                  : 'bg-gray-300 dark:bg-gray-600'
+              onClick={() => goToPage(i)}
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                currentPage === i
+                  ? 'bg-blue-500 scale-125'
+                  : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
               }`}
+              title={`Go to page ${i + 1}`}
             />
           ))}
         </div>

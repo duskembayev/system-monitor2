@@ -14,3 +14,13 @@ export interface ThemeContextType {
   isDark: boolean;
   toggleTheme: () => void;
 }
+
+export type UpdateType = 'health' | 'replicas' | 'version';
+
+export interface ComponentUpdate {
+  environment: Environment;
+  componentName: string;
+  type: UpdateType;
+  oldValue: string | number;
+  newValue: string | number;
+}
