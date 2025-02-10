@@ -94,7 +94,7 @@ function Dashboard() {
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
         <div className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm z-10 p-4 flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {selectedEnv} Environment Status
+            {selectedEnv}
           </h1>
           <button
             onClick={() => setIsTvMode(false)}
@@ -104,7 +104,7 @@ function Dashboard() {
             <MinimizeIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
-        <div className="pt-20 h-screen">
+        <div className="pt-20 ml-5 mr-5 h-screen">
           <ComponentCards components={components} tvMode={true} />
         </div>
       </div>
@@ -182,18 +182,8 @@ function Dashboard() {
           
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {selectedEnv} Components
-                </h2>
-                {loading && (
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    Loading...
-                  </div>
-                )}
-              </div>
               {lastUpdate && (
-                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 animate-fade-out">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   Last update: {lastUpdate.componentName} - {lastUpdate.type} changed from {lastUpdate.oldValue} to {lastUpdate.newValue}
                 </div>
               )}

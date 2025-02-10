@@ -91,7 +91,7 @@ export const ComponentCards: React.FC<Props> = ({ components, tvMode }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<number>();
-  const cardsPerPage = tvMode ? 15 : 12;
+  const cardsPerPage = tvMode ? 18 : 12;
   const totalPages = Math.ceil(components.length / cardsPerPage);
 
   const goToPage = (pageIndex: number) => {
@@ -166,7 +166,7 @@ export const ComponentCards: React.FC<Props> = ({ components, tvMode }) => {
         className={`${gridClass} transition-all duration-300 ${
           isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         }`}
-        style={{ height: tvMode ? 'calc(100% - 4rem)' : 'auto' }}
+        style={{ height: tvMode ? 'calc(100% - 6rem)' : 'auto' }}
       >
         {visibleComponents.map((component) => (
           <div
@@ -180,7 +180,7 @@ export const ComponentCards: React.FC<Props> = ({ components, tvMode }) => {
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate" title={component.name}>
                   {component.name}
                 </h3>
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-1 mt-2">
                   {getHealthIcon(component.health)}
                   <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
                     {component.health}

@@ -16,7 +16,7 @@ export default {
         }
       },
       animation: {
-        'fade-out': 'fade-out 600s ease-in-out forwards',
+        'fade-out': 'fade-out 2s ease-in-out forwards',
       }
     },
   },
